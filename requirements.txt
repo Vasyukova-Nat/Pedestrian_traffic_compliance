@@ -1,0 +1,3 @@
+ultralytics # Включает: torch torchvision opencv-python matplotlib numpy
+supervision 
+pandas 
