@@ -5,6 +5,8 @@ VIDEO_PATH = "selenium_video_8.mp4"
 
 ''' Детекция '''
 YOLO_MODEL_PATH = "yolov8l.pt" 
+OUTPUT_DETECTION_FILE = "output.mp4"
+
 # Версии:
 # "yolov8n.pt" - nano (самая легкая)
 # "yolov8s.pt" - small
