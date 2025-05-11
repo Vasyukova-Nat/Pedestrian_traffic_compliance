@@ -1,10 +1,10 @@
 
-# VIDEO_PATH = "video1.mp4"
-VIDEO_PATH = "selenium_video_8.mp4"
+# VIDEO_PATH = "video03.mp4"
+VIDEO_PATH = "selenium_video_12.mp4"
 
 
 ''' Детекция '''
-YOLO_MODEL_PATH = "yolov8l.pt" 
+YOLO_MODEL_PATH = "yolov8m.pt" 
 OUTPUT_DETECTION_FILE = "output.mp4"
 
 # Версии:
@@ -27,5 +27,8 @@ SEGMENTATION_MODEL_PATH = "yolov8x-seg.pt"  # Сегментация
 
 ''' Захват видео с камеры '''
 # URL = "https://flussonic2.powernet.com.ru:444/user102078/embed.html?token=dont-panic-and-carry-a-towel&autoplay=true&play_duration=28800"
-URL = "https://flussonic2.powernet.com.ru:444/user71382/embed.html?token=dont-panic-and-carry-a-towel&amp;autoplay=true&amp;play_duration=28800"
+# URL = "https://flussonic2.powernet.com.ru:444/user71382/embed.html?token=dont-panic-and-carry-a-towel&amp;autoplay=true&amp;play_duration=28800"
+# URL = "https://flussonic2.powernet.com.ru:444/user55644/embed.html?token=dont-panic-and-carry-a-towel&amp;autoplay=true&amp;play_duration=28800"
+URL = "https://flussonic2.powernet.com.ru:444/user55644/embed.html?token=dont-panic-and-carry-a-towel&autoplay=true&play_duration=28800"
+
 OUTPUT_FILE = "selenium_video.mp4"
