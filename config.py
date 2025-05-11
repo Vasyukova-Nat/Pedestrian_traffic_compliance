@@ -1,6 +1,7 @@
+import numpy as np
 
 # VIDEO_PATH = "video03.mp4"
-VIDEO_PATH = "selenium_video_12.mp4"
+VIDEO_PATH = "selenium_video_14.mp4"
 
 
 ''' Детекция '''
@@ -32,3 +33,12 @@ SEGMENTATION_MODEL_PATH = "yolov8x-seg.pt"  # Сегментация
 URL = "https://flussonic2.powernet.com.ru:444/user55644/embed.html?token=dont-panic-and-carry-a-towel&autoplay=true&play_duration=28800"
 
 OUTPUT_FILE = "selenium_video.mp4"
+
+
+''' Разметка пешеходного перехода '''
+crosswalk_coordinates = np.array([ 
+    [731, 384],
+    [610, 395],
+    [610, 563],
+    [800, 563]
+], dtype=np.int32) # коорд-ты в порядке обхода
