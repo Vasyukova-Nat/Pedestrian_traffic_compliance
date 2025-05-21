@@ -10,7 +10,7 @@ from config import URL, OUTPUT_FILE
 
 
 DURATION_SECONDS = 40
-FRAME_RATE = 20  # Частота кадров. Классно на 10.
+FRAME_RATE = 10  # Частота кадров. Классно на 10.
 
 chrome_options = Options() # Настройки Selenium
 chrome_options.add_argument("--headless")  # Фоновый режим
@@ -21,7 +21,7 @@ driver = webdriver.Chrome(options=chrome_options)
 driver.get(URL)
 
 try:
-    WebDriverWait(driver, 30).until( # Ждем загрузки видео
+    WebDriverWait(driver, 40).until( # Ждем загрузки видео
         EC.presence_of_element_located((By.TAG_NAME, "video"))
     )
 except Exception as e:

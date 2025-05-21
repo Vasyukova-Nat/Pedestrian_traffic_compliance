@@ -1,7 +1,7 @@
 import numpy as np
 
 # VIDEO_PATH = "video03.mp4"
-VIDEO_PATH = "selenium_video_14.mp4"
+VIDEO_PATH = "selenium_video_11.mp4"
 
 
 ''' Детекция '''
