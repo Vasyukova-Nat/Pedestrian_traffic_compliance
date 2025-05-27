@@ -4,7 +4,7 @@ from mmseg.apis import inference_model, init_model
 from mmseg.utils import get_palette
 import time
 
-show_window = 1 # Настройка отображения окна (1 - показывать, 0 - скрыть)
+show_window = 0 # Настройка отображения окна (1 - показывать, 0 - скрыть)
 
 VIDEO_PATH = "selenium_video_11s.mp4"
 # VIDEO_PATH = "video_11s.mp4"

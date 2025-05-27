@@ -5,8 +5,6 @@ mmsegmentation/mmseg/
 resources/
 *.pt
 *.mp4
-*.docx
-*.pptx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

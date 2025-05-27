@@ -2,7 +2,6 @@ import numpy as np
 
 # VIDEO_PATH = "video03.mp4"
 VIDEO_PATH = "selenium_video_11.mp4"
-VIDEO_PATH = "output_video_sidewalk_segmented.mp4"
 
 
 ''' Детекция '''
@@ -37,15 +36,15 @@ OUTPUT_FILE = "selenium_video.mp4"
 
 
 ''' Разметка пешеходного перехода '''
-# crosswalk_coordinates = np.array([ 
-#     [731, 384],
-#     [610, 395],
-#     [610, 563],
-#     [800, 563]
-# ], dtype=np.int32) # коорд-ты в порядке обхода
 crosswalk_coordinates = np.array([ 
-    [1130, 700],
-    [930, 720],
-    [940, 990],
-    [1240, 980]
+    [731, 384],
+    [610, 395],
+    [610, 563],
+    [800, 563]
 ], dtype=np.int32) # коорд-ты в порядке обхода
+# crosswalk_coordinates = np.array([ 
+#     [1130, 700],
+#     [930, 720],
+#     [940, 990],
+#     [1240, 980]
+# ], dtype=np.int32) # коорд-ты в порядке обхода
