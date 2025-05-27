@@ -7,7 +7,7 @@ import time
 show_window = 1 # Настройка отображения окна (1 - показывать, 0 - скрыть)
 
 VIDEO_PATH = "selenium_video_11s.mp4"
-VIDEO_PATH = "output_11.mp4"
+# VIDEO_PATH = "video_11s.mp4"
 # Конфигурация модели и путь к весам
 config_file = 'configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-80k_cityscapes-512x1024.py'
 checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_80k_cityscapes/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
