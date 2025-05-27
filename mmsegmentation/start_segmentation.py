@@ -1,7 +1,10 @@
 import cv2
-import numpy as np 
+import numpy as np
 from mmseg.apis import inference_model, init_model
 from mmseg.utils import get_palette
+import time
+
+show_window = 0 # Настройка отображения окна (1 - показывать, 0 - скрыть)
 
 VIDEO_PATH = "selenium_video_11s.mp4"
 # Конфигурация модели и путь к весам
@@ -11,33 +14,55 @@ checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/deeplabv3p
 # checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/deeplabv3plus/deeplabv3plus_r18-d8_512x1024_80k_cityscapes/deeplabv3plus_r18-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
 
 # Инициализация модели
+print("Инициализация модели...")
+start_time = time.time()
 model = init_model(config_file, checkpoint_file, device='cpu')
+print(f"Модель загружена за {time.time() - start_time:.2f} секунд")
 
 # Палитра цветов для Cityscapes (19 классов)
 palette = get_palette('cityscapes')
 
 # Открытие видеофайла
 cap = cv2.VideoCapture(VIDEO_PATH)
+if not cap.isOpened():
+    print("Ошибка открытия видеофайла")
+    exit()
 
-# Получение общего количества кадров для расчета прогресса
+# Получение параметров видео
 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-# Параметры выходного видео
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 fps = int(cap.get(cv2.CAP_PROP_FPS))
+duration = total_frames / fps
+
+print(f"\nИнформация о видео:")
+print(f"Размер: {frame_width}x{frame_height}")
+print(f"Всего кадров: {total_frames}")
+print(f"Длительность: {duration:.2f} секунд\n")
+
+# Параметры выходного видео
 output_path = 'output_video_segmented.mp4'
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
 
+if show_window:
+    # Создаем окно для отображения прогресса
+    cv2.namedWindow('Video segmentation', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Video segmentation', 800, 600)
+
 frame_count = 0
+start_processing_time = time.time()
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
     # Сегментация кадра
+    inference_start = time.time()
     result = inference_model(model, frame)
+    inference_time = time.time() - inference_start
+    
     seg_mask = result.pred_sem_seg.data[0].cpu().numpy()
 
     # Преобразование маски в цветное изображение
@@ -52,12 +77,52 @@ while cap.isOpened():
     # Сохранение кадра
     out.write(blended)
     
-    # Расчет и вывод процента выполнения
+    # Расчет прогресса и скорости обработки
     frame_count += 1
     progress = (frame_count / total_frames) * 100
-    print(f"Прогресс обработки: {progress:.2f}%", end='\r')
+    elapsed_time = time.time() - start_processing_time
+    remaining_time = (elapsed_time / frame_count) * (total_frames - frame_count)
+    fps_processing = frame_count / elapsed_time
+    
+    if show_window:
+        # Создаем изображение для отображения
+        display_frame = blended.copy()
+        
+        # Добавляем информацию о прогрессе
+        cv2.putText(display_frame, f"Progress: {progress:.1f}%", (20, 40), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.putText(display_frame, f"Frame: {frame_count}/{total_frames}", (20, 80), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.putText(display_frame, f"Time: {elapsed_time:.1f}s | Remained: {remaining_time:.1f}s", (20, 120), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.putText(display_frame, f"Speed: {fps_processing:.2f} FPS", (20, 160), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        
+        # Рисуем прогресс-бар
+        bar_width = int(frame_width * 0.9)
+        bar_height = 30
+        bar_x = (frame_width - bar_width) // 2
+        bar_y = frame_height - 50
+        cv2.rectangle(display_frame, (bar_x, bar_y), (bar_x + bar_width, bar_y + bar_height), (255, 255, 255), 2)
+        cv2.rectangle(display_frame, (bar_x, bar_y), (bar_x + int(bar_width * progress / 100), bar_y + bar_height), (0, 255, 0), -1)
+        
+        # Отображаем кадр
+        cv2.imshow('Video segmentation', display_frame)
+        
+        # Выход по нажатию 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    else:
+        print(f"Progress: {progress:.1f}% | Frame: {frame_count}/{total_frames}", end='\r')
 
 # Освобождение ресурсов
 cap.release()
 out.release()
-print("\nОбработка видео завершена.")
+if show_window:
+    cv2.destroyAllWindows()
+
+total_time = time.time() - start_time
+print("\nОбработка видео завершена!")
+print(f"Общее время обработки: {total_time:.2f} секунд")
+print(f"Средняя скорость обработки: {total_frames/total_time:.2f} FPS")
+print(f"Результат сохранен в: {output_path}")
