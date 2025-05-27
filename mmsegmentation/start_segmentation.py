@@ -7,6 +7,7 @@ import time
 show_window = 1 # Настройка отображения окна (1 - показывать, 0 - скрыть)
 
 VIDEO_PATH = "selenium_video_11s.mp4"
+VIDEO_PATH = "output_11.mp4"
 # Конфигурация модели и путь к весам
 config_file = 'configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-80k_cityscapes-512x1024.py'
 checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_80k_cityscapes/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
@@ -25,10 +26,6 @@ palette = get_palette('cityscapes')
 # Определяем индекс класса "sidewalk" (тротуар) в Cityscapes
 # Классы Cityscapes: 0:road, 1:sidewalk, 2:building, ..., 18:license plate
 SIDEWALK_CLASS_ID = 1
-
-# Создаем кастомную палитру только для тротуара (красный цвет)
-custom_palette = [[0, 0, 0] for _ in range(len(palette))]  # Черный фон для всех классов
-custom_palette[SIDEWALK_CLASS_ID] = [0, 0, 255]  # Красный цвет для тротуара
 
 # Открытие видеофайла
 cap = cv2.VideoCapture(VIDEO_PATH)
@@ -74,19 +71,21 @@ while cap.isOpened():
     seg_mask = result.pred_sem_seg.data[0].cpu().numpy()
 
     # Создаем маску для тротуара
-    sidewalk_mask = (seg_mask == SIDEWALK_CLASS_ID).astype(np.uint8) * 255
+    sidewalk_mask = (seg_mask == SIDEWALK_CLASS_ID).astype(np.uint8)
     
     # Применяем морфологические операции для улучшения маски
     kernel = np.ones((5, 5), np.uint8)
     sidewalk_mask = cv2.morphologyEx(sidewalk_mask, cv2.MORPH_CLOSE, kernel)
     
-    # Создаем цветную маску (красный цвет для тротуара)
+        # Создаем цветную маску (красный цвет для тротуара)
     color_mask = np.zeros_like(frame)
-    color_mask[sidewalk_mask == 255] = [0, 0, 255]  # Красный цвет
+    # color_mask[sidewalk_mask == 1] = [0, 0, 255]  # Красный цвет
+    color_mask[sidewalk_mask == 1] = [0, 255, 255]  # Жёлтый цвет (BGR)
     
-    # Наложение маски на оригинальный кадр
-    alpha = 0.5
-    blended = cv2.addWeighted(frame, 1 - alpha, color_mask, alpha, 0)
+    # Наложение маски на оригинальный кадр (без затемнения)
+    # Вместо addWeighted просто добавляем цвет там, где есть маска
+    blended = frame.copy()
+    blended[sidewalk_mask == 1] = blended[sidewalk_mask == 1] * 0.5 + color_mask[sidewalk_mask == 1] * 0.5
     
     # Добавляем текст с информацией
     cv2.putText(blended, "Sidewalk Detection", (20, 50), 
