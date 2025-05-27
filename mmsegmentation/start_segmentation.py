@@ -4,7 +4,7 @@ from mmseg.apis import inference_model, init_model
 from mmseg.utils import get_palette
 import time
 
-show_window = 0 # Настройка отображения окна (1 - показывать, 0 - скрыть)
+show_window = 1 # Настройка отображения окна (1 - показывать, 0 - скрыть)
 
 VIDEO_PATH = "selenium_video_11s.mp4"
 # Конфигурация модели и путь к весам
@@ -21,6 +21,14 @@ print(f"Модель загружена за {time.time() - start_time:.2f} се
 
 # Палитра цветов для Cityscapes (19 классов)
 palette = get_palette('cityscapes')
+
+# Определяем индекс класса "sidewalk" (тротуар) в Cityscapes
+# Классы Cityscapes: 0:road, 1:sidewalk, 2:building, ..., 18:license plate
+SIDEWALK_CLASS_ID = 1
+
+# Создаем кастомную палитру только для тротуара (красный цвет)
+custom_palette = [[0, 0, 0] for _ in range(len(palette))]  # Черный фон для всех классов
+custom_palette[SIDEWALK_CLASS_ID] = [0, 0, 255]  # Красный цвет для тротуара
 
 # Открытие видеофайла
 cap = cv2.VideoCapture(VIDEO_PATH)
@@ -41,14 +49,14 @@ print(f"Всего кадров: {total_frames}")
 print(f"Длительность: {duration:.2f} секунд\n")
 
 # Параметры выходного видео
-output_path = 'output_video_segmented.mp4'
+output_path = 'output_video_sidewalk_segmented.mp4'
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
 
 if show_window:
     # Создаем окно для отображения прогресса
-    cv2.namedWindow('Video segmentation', cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('Video segmentation', 800, 600)
+    cv2.namedWindow('Sidewalk Segmentation', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Sidewalk Segmentation', 800, 600)
 
 frame_count = 0
 start_processing_time = time.time()
@@ -65,14 +73,24 @@ while cap.isOpened():
     
     seg_mask = result.pred_sem_seg.data[0].cpu().numpy()
 
-    # Преобразование маски в цветное изображение
-    color_mask = np.zeros((seg_mask.shape[0], seg_mask.shape[1], 3), dtype=np.uint8)
-    for class_id in np.unique(seg_mask):
-        color_mask[seg_mask == class_id] = palette[class_id]
-
+    # Создаем маску для тротуара
+    sidewalk_mask = (seg_mask == SIDEWALK_CLASS_ID).astype(np.uint8) * 255
+    
+    # Применяем морфологические операции для улучшения маски
+    kernel = np.ones((5, 5), np.uint8)
+    sidewalk_mask = cv2.morphologyEx(sidewalk_mask, cv2.MORPH_CLOSE, kernel)
+    
+    # Создаем цветную маску (красный цвет для тротуара)
+    color_mask = np.zeros_like(frame)
+    color_mask[sidewalk_mask == 255] = [0, 0, 255]  # Красный цвет
+    
     # Наложение маски на оригинальный кадр
     alpha = 0.5
     blended = cv2.addWeighted(frame, 1 - alpha, color_mask, alpha, 0)
+    
+    # Добавляем текст с информацией
+    cv2.putText(blended, "Sidewalk Detection", (20, 50), 
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     # Сохранение кадра
     out.write(blended)
@@ -89,13 +107,13 @@ while cap.isOpened():
         display_frame = blended.copy()
         
         # Добавляем информацию о прогрессе
-        cv2.putText(display_frame, f"Progress: {progress:.1f}%", (20, 40), 
+        cv2.putText(display_frame, f"Progress: {progress:.1f}%", (20, 100), 
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv2.putText(display_frame, f"Frame: {frame_count}/{total_frames}", (20, 80), 
+        cv2.putText(display_frame, f"Frame: {frame_count}/{total_frames}", (20, 140), 
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv2.putText(display_frame, f"Time: {elapsed_time:.1f}s | Remained: {remaining_time:.1f}s", (20, 120), 
+        cv2.putText(display_frame, f"Time: {elapsed_time:.1f}s | Remained: {remaining_time:.1f}s", (20, 180), 
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv2.putText(display_frame, f"Speed: {fps_processing:.2f} FPS", (20, 160), 
+        cv2.putText(display_frame, f"Speed: {fps_processing:.2f} FPS", (20, 220), 
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
         # Рисуем прогресс-бар
@@ -107,7 +125,7 @@ while cap.isOpened():
         cv2.rectangle(display_frame, (bar_x, bar_y), (bar_x + int(bar_width * progress / 100), bar_y + bar_height), (0, 255, 0), -1)
         
         # Отображаем кадр
-        cv2.imshow('Video segmentation', display_frame)
+        cv2.imshow('Sidewalk Segmentation', display_frame)
         
         # Выход по нажатию 'q'
         if cv2.waitKey(1) & 0xFF == ord('q'):
