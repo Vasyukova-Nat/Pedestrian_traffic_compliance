@@ -1,11 +1,11 @@
 import numpy as np
 
 # VIDEO_PATH = "video03.mp4"
-VIDEO_PATH = "selenium_video_11.mp4"
+VIDEO_PATH = "selenium_video_11s.mp4"
 
 
 ''' Детекция '''
-YOLO_MODEL_PATH = "yolov8m.pt" 
+YOLO_MODEL_PATH = "yolov8s.pt" 
 OUTPUT_DETECTION_FILE = "output.mp4"
 
 # Версии:

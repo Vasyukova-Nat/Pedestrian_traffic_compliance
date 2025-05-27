@@ -57,7 +57,7 @@ def annotate_frame(frame, detections, speeds, violations):
     labels = []
     for speed, violation in zip(speeds, violations):
         status = "Moving" if speed > 2 else "Standing"
-        location = "VIOLATION!" if violation else "On crosswalk"
+        location = "VIOLATION!" if violation else "Not a violation"
         labels.append(f"{status} {speed:.1f}px/f | {location}")
 
     # Draw labels
